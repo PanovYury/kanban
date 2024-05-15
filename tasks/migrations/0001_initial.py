@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('title', models.CharField(max_length=255, unique=True)),
-                ('status', models.CharField(choices=[('proposed', 'Не активная'), ('active', 'Активная'), ('resolved', 'На проверке'), ('closed', 'Закрытая')], default='proposed', max_length=8)),
+                ('status', models.CharField(choices=[('proposed', 'Запланирована'), ('active', 'Активная'), ('resolved', 'На проверке'), ('closed', 'Закрытая')], default='proposed', max_length=8)),
             ],
             options={
                 'abstract': False,
@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('title', models.CharField(max_length=255, unique=True)),
-                ('status', models.CharField(choices=[('proposed', 'Не активная'), ('active', 'Активная'), ('resolved', 'На проверке'), ('closed', 'Закрытая')], default='proposed', max_length=8)),
+                ('status', models.CharField(choices=[('proposed', 'Запланирована'), ('active', 'Активная'), ('resolved', 'На проверке'), ('closed', 'Закрытая')], default='proposed', max_length=8)),
                 ('board', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='tasks.board')),
             ],
             options={
