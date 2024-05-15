@@ -16,7 +16,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.views.generic import TemplateView
+
+from tasks.views import boards, update_task, tasks
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', TemplateView.as_view(template_name="index.html"), name='home'),
+    path('boards/', boards, name='boards_list'),
+    path('boards/<int:board_id>/tasks/', tasks, name='tasks_list'),
+    path('api/tasks/<int:pk>/', update_task, name='move_task'),
 ]

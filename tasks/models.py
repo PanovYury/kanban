@@ -1,7 +1,7 @@
 from django.db import models
 
 STATUSES = [
-    ('proposed', 'Не активная'),
+    ('proposed', 'Запланирована'),
     ('active', 'Активная'),
     ('resolved', 'На проверке'),
     ('closed', 'Закрытая'),
@@ -15,7 +15,7 @@ class BoardItem(models.Model):
         abstract = True
 
     def __str__(self) -> str:
-        return f'{self.get_status_display()}\t| {self.title}'
+        return self.title
 
 class Board(BoardItem):
     pass

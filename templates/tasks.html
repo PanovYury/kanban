@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load get_item %}
+
+{% block content %}
+<h2 class="mb-3">{{board.title}}</h2>
+<div class="row row-cols-4">
+    {% for status, display in statuses %}
+    <div class="col">
+        <div class="text-center p-3 bg-secondary rounded text-white mb-3">{{ display }}</div>
+        <div class="d-flex flex-column gap-2 h-100" data-type="column" data-status="{{status}}">
+            {% for task in tasks|get_item:status %}
+            <div class="card" data-task-id="{{task.id}}" data-type="task">
+                <div class="card-body">
+                    {{ task.title }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+<script>
+    function getCookie(name) {
+        const matches = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+        return matches ? decodeURIComponent(matches[1]) : '';
+    }
+
+    document.querySelectorAll('[data-type="column"]').forEach(col => {
+        new Sortable(col, {
+            group: 'kanban',
+            animation: 150,
+            onRemove: (evt) => {
+                fetch(`/api/tasks/${evt.item.dataset.taskId}/`, {
+                    method: 'PUT',
+                    headers: {
+                        "Content-Type": "application/json",
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        status: evt.to.dataset.status
+                    })
+                })
+            }
+        })
+    })
+</script>
+{% endblock %}
