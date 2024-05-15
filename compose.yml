@@ -1,0 +1,34 @@
+services: # Раздел описания сервисов
+  web: # Описываем сервис нашего веб-приложения
+    build:
+      context: . # Папка, где находится Dockerfile, из которого будет создан контейнер
+    volumes:
+      - ./:/usr/src/app/ # Проброс файлов проекта в контейнер
+    env_file:
+      - ./.env # Указание файла с переменными окружения
+    ports:
+      - 8080:8080
+    environment:
+      - NGINX_PORT
+      - DB_NAME=${POSTGRES_DB}
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_HOST=db
+      - DB_PORT=5432
+    depends_on:
+      - db # Запуск контейнера, после успешного запуска контейнера с базой данных
+    # создание и накатывание миграций, сбор статики и запуск сервера разработки
+    command: bash -c "python manage.py makemigrations &&
+      python manage.py migrate &&
+      python manage.py runserver 0.0.0.0:8080" # ВАЖНО! runserver используется только для разработки. Для рабочего окружения необходимо использовать wsgi веб-сервер, например, uWSGI или Gunicorn.
+
+  db: # Описываем сервис с базой данных
+    image: postgres:16-alpine # Официальный образ postgres, на базе которого будет создаваться контейнер
+    environment:
+      - POSTGRES_DB
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+    ports:
+      - ${LOCAL_DEV_POSTGRES_PORT:-5433}:5432 # Проброс портов в сеть хоста, что бы подключаться к СУБД через клиент
+    volumes:
+      - ./data:/var/lib/postgresql/data/ # Проброс данных БД на отдельный том, для надежности хранения данных
