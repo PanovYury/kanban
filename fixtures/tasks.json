@@ -1,0 +1,142 @@
+[
+    {
+        "model": "tasks.board",
+        "pk": 1,
+        "fields": {
+            "title": "Веб-разработка",
+            "status": "proposed"
+        }
+    },
+    {
+        "model": "tasks.board",
+        "pk": 2,
+        "fields": {
+            "title": "Маркетинг",
+            "status": "proposed"
+        }
+    },
+    {
+        "model": "tasks.board",
+        "pk": 3,
+        "fields": {
+            "title": "Административные задачи",
+            "status": "proposed"
+        }
+    },
+    {
+        "model": "tasks.board",
+        "pk": 4,
+        "fields": {
+            "title": "Продуктовые задачи",
+            "status": "proposed"
+        }
+    },
+    {
+        "model": "tasks.task",
+        "pk": 1,
+        "fields": {
+            "title": "Создать макет главной страницы",
+            "status": "proposed",
+            "board": 1
+        }
+    },
+    {
+        "model": "tasks.task",
+        "pk": 2,
+        "fields": {
+            "title": "Настроить адаптивность сайта",
+            "status": "proposed",
+            "board": 1
+        }
+    },
+    {
+        "model": "tasks.task",
+        "pk": 3,
+        "fields": {
+            "title": "Добавить функционал фильтрации товаров",
+            "status": "proposed",
+            "board": 1
+        }
+    },
+    {
+        "model": "tasks.task",
+        "pk": 4,
+        "fields": {
+            "title": "Подготовить рекламную кампанию в соцсетях",
+            "status": "proposed",
+            "board": 2
+        }
+    },
+    {
+        "model": "tasks.task",
+        "pk": 5,
+        "fields": {
+            "title": "Написать текст для email-рассылки",
+            "status": "proposed",
+            "board": 2
+        }
+    },
+    {
+        "model": "tasks.task",
+        "pk": 6,
+        "fields": {
+            "title": "Провести анализ конкурентов",
+            "status": "proposed",
+            "board": 2
+        }
+    },
+    {
+        "model": "tasks.task",
+        "pk": 7,
+        "fields": {
+            "title": "Подготовить отчет по финансам за текущий месяц",
+            "status": "proposed",
+            "board": 3
+        }
+    },
+    {
+        "model": "tasks.task",
+        "pk": 8,
+        "fields": {
+            "title": "Провести совещание с сотрудниками",
+            "status": "proposed",
+            "board": 3
+        }
+    },
+    {
+        "model": "tasks.task",
+        "pk": 9,
+        "fields": {
+            "title": "Заказать офисные принадлежности",
+            "status": "proposed",
+            "board": 3
+        }
+    },
+    {
+        "model": "tasks.task",
+        "pk": 10,
+        "fields": {
+            "title": "Провести тестирование новой версии приложения",
+            "status": "proposed",
+            "board": 4
+        }
+    },
+    {
+        "model": "tasks.task",
+        "pk": 11,
+        "fields": {
+            "title": "Добавить возможность оплаты онлайн",
+            "status": "proposed",
+            "board": 4
+        }
+    },
+    {
+        "model": "tasks.task",
+        "pk": 12,
+        "fields": {
+            "title": "Обновить дизайн лендинга",
+            "status": "proposed",
+            "board": 4
+        }
+    }
+]
