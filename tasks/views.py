@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_204_NO_CONTENT
 
 from tasks.models import STATUSES, Board, Task
+from tasks.service import send_notification
 
 
 def boards(request):
@@ -48,4 +49,5 @@ def update_task(request, pk):
     task = Task.objects.get(pk=pk)
     task.status = status
     task.save()
+    send_notification.delay(pk)
     return Response(status=HTTP_204_NO_CONTENT)

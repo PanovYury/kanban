@@ -1,0 +1,9 @@
+{
+    "admin": true,
+    "admin_password": "12345",
+    "admin_secret": "12345",
+    "allowed_origins": "*",
+    "client_insecure": true,
+    "api_insecure": true,
+    "port": "80"
+}

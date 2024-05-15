@@ -1,5 +1,5 @@
-services: # Раздел описания сервисов
-  web: # Описываем сервис нашего веб-приложения
+services:
+  web:
     build:
       context: . # Папка, где находится Dockerfile, из которого будет создан контейнер
     volumes:
@@ -18,11 +18,9 @@ services: # Раздел описания сервисов
     depends_on:
       - db # Запуск контейнера, после успешного запуска контейнера с базой данных
     # создание и накатывание миграций, сбор статики и запуск сервера разработки
-    command: bash -c "python manage.py makemigrations &&
-      python manage.py migrate &&
-      python manage.py runserver 0.0.0.0:8080" # ВАЖНО! runserver используется только для разработки. Для рабочего окружения необходимо использовать wsgi веб-сервер, например, uWSGI или Gunicorn.
+    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8080" # ВАЖНО! runserver используется только для разработки. Для рабочего окружения необходимо использовать wsgi веб-сервер, например, uWSGI или Gunicorn.
 
-  db: # Описываем сервис с базой данных
+  db:
     image: postgres:16-alpine # Официальный образ postgres, на базе которого будет создаваться контейнер
     environment:
       - POSTGRES_DB
@@ -35,16 +33,36 @@ services: # Раздел описания сервисов
 
   redis:
     image: redis:7-alpine
-  
+
   celery:
-    build: 
+    build:
       context: . # Папка, где находится Dockerfile, из которого будет создан контейнер
-    command: celery --app=core worker --loglevel=info --logfile=logs/celery.log
     volumes:
       - ./:/usr/src/app/ # Проброс файлов проекта в контейнер
+    env_file:
+      - ./.env # Указание файла с переменными окружения
     environment:
+      - DB_NAME=${POSTGRES_DB}
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_HOST=db
+      - DB_PORT=5432
       - CELERY_BROKER=redis://redis:6379/0
       - CELERY_BACKEND=redis://redis:6379/0
     depends_on:
       - web
       - redis
+    command: celery --app=config worker --loglevel=info --logfile=logs/celery.log
+
+  centrifugo:
+    container_name: centrifugo
+    image: centrifugo/centrifugo:v5
+    volumes:
+      - ./config/centrifugo.json:/centrifugo/config.json
+    command: centrifugo -c config.json
+    ports:
+      - 8081:80
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
