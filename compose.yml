@@ -32,3 +32,19 @@ services: # Раздел описания сервисов
       - ${LOCAL_DEV_POSTGRES_PORT:-5433}:5432 # Проброс портов в сеть хоста, что бы подключаться к СУБД через клиент
     volumes:
       - ./data:/var/lib/postgresql/data/ # Проброс данных БД на отдельный том, для надежности хранения данных
+
+  redis:
+    image: redis:7-alpine
+  
+  celery:
+    build: 
+      context: . # Папка, где находится Dockerfile, из которого будет создан контейнер
+    command: celery --app=core worker --loglevel=info --logfile=logs/celery.log
+    volumes:
+      - ./:/usr/src/app/ # Проброс файлов проекта в контейнер
+    environment:
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+    depends_on:
+      - web
+      - redis
