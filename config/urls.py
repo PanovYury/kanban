@@ -15,15 +15,25 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from django.views.generic import TemplateView
 
-from tasks.views import boards, update_task, tasks
+from rest_framework.routers import SimpleRouter
+
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+
+from tasks.views import TasksViewSet, boards, tasks
+
+router = SimpleRouter()
+router.register('tasks', TasksViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', TemplateView.as_view(template_name="index.html"), name='home'),
     path('boards/', boards, name='boards_list'),
     path('boards/<int:board_id>/tasks/', tasks, name='tasks_list'),
-    path('api/tasks/<int:pk>/', update_task, name='move_task'),
+    
+    path('api/', include(router.urls)),
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
 ]
