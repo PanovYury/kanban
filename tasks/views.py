@@ -1,14 +1,16 @@
-from itertools import groupby
+import logging
 from django.shortcuts import render
 from django.db.models import Case, When, IntegerField
 from django.db.models.aggregates import Count
-from django.views.decorators.csrf import csrf_exempt 
 
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework.status import HTTP_204_NO_CONTENT
+from rest_framework.viewsets import GenericViewSet
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 
+from django_filters import rest_framework as filters
+
+from tasks.filters import TaskFilterset
 from tasks.models import STATUSES, Board, Task
+from tasks.serializers import TaskSerializer
 from tasks.service import send_notification
 
 
@@ -29,25 +31,21 @@ def boards(request):
 
 def tasks(request, board_id:int):
     board = Board.objects.get(pk=board_id)
-    tasks = Task.objects.filter(board=board)
     statuses = STATUSES
-
-    grouped_tasks = {k: list(v) for k, v in groupby(tasks, key=lambda t: t.status)}
 
     context = {
         'statuses': statuses,
-        'tasks': grouped_tasks,
         'board': board
     }
     return render(request, 'tasks.html', context)
 
 
-@csrf_exempt
-@api_view(['PUT'])
-def update_task(request, pk):
-    status = request.data.get('status')
-    task = Task.objects.get(pk=pk)
-    task.status = status
-    task.save()
-    send_notification.delay(pk)
-    return Response(status=HTTP_204_NO_CONTENT)
+class TasksViewSet(GenericViewSet, ListCreateAPIView, RetrieveUpdateDestroyAPIView):
+    serializer_class = TaskSerializer
+    filterset_class = TaskFilterset
+    filter_backends = (filters.DjangoFilterBackend,)
+    queryset = Task.objects.all()
+
+    def perform_update(self, serializer):
+        super().perform_update(serializer)
+        send_notification.delay(serializer.data)
