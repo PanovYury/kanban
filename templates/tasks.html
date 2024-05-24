@@ -3,71 +3,61 @@
 
 {% block content %}
 <h2 class="mb-3">{{board.title}}</h2>
-<div class="row row-cols-4">
+<div class="row row-cols-4" x-data>
     {% for status, display in statuses %}
     <div class="col">
         <div class="text-center p-3 bg-secondary rounded text-white mb-3">{{ display }}</div>
-        <div class="d-flex flex-column gap-2 h-100" data-type="column" data-status="{{status}}">
-            {% for task in tasks|get_item:status %}
-            <div class="card" data-task-id="{{task.id}}" data-type="task">
-                <div class="card-body">
-                    {{ task.title }}
+        <div class="vstack gap-2 h-100" x-sort="$store.board.dragHandler($item, '{{status}}')" x-sort:group="kanban">
+            <template x-for="task in $store.board.tasks.filter(t => t.status === '{{ status }}')">
+                <div class="card" data-type="task" :data-task-id="task.id" x-sort:item="task.id">
+                    <div class="card-body" x-text="task.title"></div>
                 </div>
-            </div>
-            {% endfor %}
+            </template>
         </div>
     </div>
     {% endfor %}
 </div>
 
+{% endblock %}
+
+{% block scripts %}
 <script src="https://unpkg.com/centrifuge@5.0.1/dist/centrifuge.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
-<script>
-    function getCookie(name) {
-        const matches = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
-        return matches ? decodeURIComponent(matches[1]) : '';
-    }
-
-    document.querySelectorAll('[data-type="column"]').forEach(col => {
-        new Sortable(col, {
-            group: 'kanban',
-            animation: 150,
-            onRemove: (evt) => {
-                fetch(`/api/tasks/${evt.item.dataset.taskId}/`, {
-                    method: 'PUT',
-                    headers: {
-                        "Content-Type": "application/json",
-                        'X-CSRFToken': getCookie('csrftoken')
-                    },
-                    body: JSON.stringify({
-                        status: evt.to.dataset.status
-                    })
-                })
-            }
-        })
-    })
-</script>
-
 <script>
     const centrifuge = new Centrifuge("ws://localhost:8081/connection/websocket");
     const sub = centrifuge.newSubscription("tasks-{{board.id}}");
 
-    centrifuge.on('connecting', function (ctx) {
-        console.log(`connecting: ${ctx.code}, ${ctx.reason}`);
-    }).on('connected', function (ctx) {
-        console.log(`connected over ${ctx.transport}`);
-    }).on('disconnected', function (ctx) {
-        console.log(`disconnected: ${ctx.code}, ${ctx.reason}`);
-    }).connect();
+    centrifuge.connect();
 
-    sub.on('publication', function (ctx) {
-        makeToast(`Задача "${ctx.data.task}" перешла в статус ${ctx.data.status}`)
-    }).on('subscribing', function (ctx) {
-        console.log(`subscribing: ${ctx.code}, ${ctx.reason}`);
-    }).on('subscribed', function (ctx) {
-        console.log('subscribed', ctx);
-    }).on('unsubscribed', function (ctx) {
-        console.log(`unsubscribed: ${ctx.code}, ${ctx.reason}`);
-    }).subscribe();
+    document.addEventListener('alpine:init', () => {
+        sub.on('publication', function (ctx) {
+            const { id: taskId, boardId, ...data } = ctx.data;
+            Alpine.store('board').updateTask(taskId, data)
+        }).subscribe();
+
+        Alpine.store('board', {
+            tasks: [],
+
+            async init() {
+                const response = await fetch('/api/tasks/?board={{ board.id }}');
+                this.tasks = await response.json();
+            },
+
+            updateTask(id, data) {
+                const task = this.tasks.find(t => t.id === id);
+                Object.assign(task, data);
+            },
+
+            dragHandler(taskId, status) {
+                fetch(`/api/tasks/${taskId}/`, {
+                    method: 'PATCH',
+                    headers: {
+                        "Content-Type": "application/json",
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ status })
+                })
+            }
+        })
+    })
 </script>
 {% endblock %}
